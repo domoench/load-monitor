@@ -43,5 +43,20 @@ def get_uptime():
 
   s.enter(10, 1, get_uptime, ())
 
-get_uptime()
-s.run()
+def loadAvg(l):
+  """
+  Calculate the average load over a given load history list.
+
+  Args:
+    l: A list of (time, cpu-load) tuples
+  """
+  n = len(l)
+  v = 0
+  for (t, load) in l:
+    v += load
+  return v / n
+
+
+if __name__ == '__main__':
+  get_uptime()
+  s.run()
