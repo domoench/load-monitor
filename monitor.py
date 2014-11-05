@@ -6,12 +6,22 @@
   Currently the datastore is a JSON file.
 """
 
-import sched, time, os
+import sched, time, os, json
 
 s = sched.scheduler(time.time, time.sleep)
 
 def get_uptime():
-  print(str(time.time()) + ': ' + str(os.getloadavg()))
+  t    = time.time()
+  load = os.getloadavg()
+  print(str(t) + ': ' + str(load))
+
+  data = {}
+  data['time'] = t
+  data['load'] = load[0] # One minute load-avg
+
+  with open('data.json', 'w') as f:
+    json.dump(data, f)
+
   s.enter(10, 1, get_uptime, ())
   s.run()
 
