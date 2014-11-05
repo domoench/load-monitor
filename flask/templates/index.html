@@ -8,11 +8,15 @@
     <h1>Stats</h1>
     Uptime: <span id='uptime'></span><br>
     High load: <span id='high-load'></span><br>
+    Alerts:
+    <ul id='alerts'>
+    </ul>
     History:
     <ul id='history'>
     </ul>
 
     <script>
+      var high_load = false;
       refresh();
 
       function poll(){
@@ -31,13 +35,36 @@
       }
 
       function handleData(data) {
-        $('#uptime').html(data.uptime);
-        $('#high-load').html(String(data.highload));
+        $('#uptime').html(data.uptime + ' mins');
+        $('#high-load').html(String(data.highLoad));
+        
+        // Detect changes in alert state
+        if (data.highLoad != high_load) {
+          high_load = data.highLoad;
+
+          var now = new Date(data.history[0][0] * 1000);
+          var curr_t = now.toLocaleTimeString();
+
+          var a_list = $('ul#alerts');
+          var alert_string = '';
+          var li = $('<li/>');
+          if (data.highLoad) {
+            alert_string = 'High Load Alert! ';
+          }
+          else {
+            alert_string = 'Load Recovered! ';
+          }
+          alert_string += 'Load: ' + data.twoMinAvg.toFixed(2) + ', Triggered at ' 
+                          + curr_t;
+          li.text(alert_string);
+          li.prependTo(a_list);
+        }
 
         var h_list = $('ul#history');
         h_list.html('')
         $.each(data.history, function(i) {
-          var li = $('<li/>').text(data.history[i][1]).appendTo(h_list);
+            var li = $('<li/>').text(data.history[i][1].toFixed(2));
+            li.appendTo(h_list);
         });
       }
     </script>
