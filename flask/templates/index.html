@@ -6,10 +6,10 @@
 
   <body>
     <h1>Stats</h1>
-    Uptime: <span id="uptime"></span>
-    <br>
+    Uptime: <span id='uptime'></span><br>
+    High load: <span id='high-load'></span><br>
     History:
-    <ul id="history">
+    <ul id='history'>
     </ul>
 
     <script>
@@ -32,7 +32,7 @@
 
       function handleData(data) {
         $('#uptime').html(data.uptime);
-        console.log(data.history);
+        $('#high-load').html(String(data.highload));
 
         var h_list = $('ul#history');
         h_list.html('')

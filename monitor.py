@@ -6,9 +6,19 @@
   Currently the datastore is a JSON file.
 """
 
+"""
+TODO:
+  * Handle creating new data.json file when app is just starting up
+  * Track min, and max
+  * Check load average for past 2 minutes
+  * Maintain high_load state
+"""
+
 import sched, time, os, json, uptime
 
 s = sched.scheduler(time.time, time.sleep)
+
+high_load = False
 
 def get_uptime():
   t    = time.time()     # Current time
@@ -20,7 +30,8 @@ def get_uptime():
   with open('data.json', 'r+') as f:
     old_data = json.load(f)
 
-    data['history'] = [(t, load[0])] + old_data['history'] 
+    data['history']  = [(t, load[0])] + old_data['history'] 
+    data['highload'] = high_load
 
     if len(data['history']) > 60:
       data['history'].pop()
