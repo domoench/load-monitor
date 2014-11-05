@@ -1,0 +1,46 @@
+<html>
+  <head>
+    <title>CPU Load Monitor</title>
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
+  </head>
+
+  <body>
+    <h1>Stats</h1>
+    Uptime: <span id="uptime"></span>
+    <br>
+    History:
+    <ul id="history">
+    </ul>
+
+    <script>
+      refresh();
+
+      function poll(){
+        setTimeout(refresh, 10000); 
+      };
+
+      function refresh() {
+        $.ajax({
+          url: 'http://localhost:5000/state', 
+          dataType: 'json',
+          success: function(data) {
+            // Note: data is already parsed into a JS object
+            handleData(data);
+            poll();
+          }});
+      }
+
+      function handleData(data) {
+        $('#uptime').html(data.uptime);
+        console.log(data.history);
+
+        var h_list = $('ul#history');
+        h_list.html('')
+        $.each(data.history, function(i) {
+          var li = $('<li/>').text(data.history[i][1]).appendTo(h_list);
+        });
+      }
+    </script>
+  </body>
+
+</html>
