@@ -15,3 +15,6 @@ This simple web app can be used to monitor your machine's CPU load and uptime.
 
 ## To Run Unit Tests
 `python test.py`
+
+## Design
+![Design](https://raw.githubusercontent.com/domoench/load-monitor/master/flask/static/design.png?token=ACbj6MViB_qLH_KX4qgDV7JfqYQrS1Bhks5UZRISwA%3D%3D)
