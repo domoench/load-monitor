@@ -14,6 +14,8 @@ A simple app to monitor and visualize your machine's CPU load and uptime.
   * `python server.py`
 3. Open http://localhost:5000/ in your browser.
 
+I run this all in a virtualenv python environment with Python 2.7.8.
+
 ## To Run Unit Tests
 `python test.py`
 
@@ -23,3 +25,4 @@ A simple app to monitor and visualize your machine's CPU load and uptime.
 ## Other Citations
 * [Mike Bostock's D3 Tutorial](http://bost.ocks.org/mike/bar/3/)
 * [d3.js](d3js.org)
+* [d3-tip](https://github.com/Caged/d3-tip/blob/master/examples/bars.html)

@@ -101,12 +101,12 @@
       function drawBarGraph(data) {
         var history = [];
         for (var i = 0; i < data.history.length; ++i) {
-          var sample = {
-            x: i * 10,              // Seconds in the past
-            y: data.history[i][1],  // Load
-            t: prettyTime(data.history[i][0])   // Timestamp
+          var sample_point = {
+            x: i * 10,                        // Seconds in the past
+            y: data.history[i][1],            // Load
+            t: prettyTime(data.history[i][0]) // System timestamp
           }
-          history.push(sample);
+          history.push(sample_point);
         }
 
         var time_steps = [];
@@ -151,8 +151,9 @@
                   .attr('class', 'd3-tip')
                   .offset([-10, 0])
                   .html(function(d) { 
-                    return '<p><strong>Load: </strong>' + d.y.toFixed(3) + '</span>'
-                    + '<p><strong>Time: </strong>' + d.t; });
+                    return '<p><strong>Load: </strong>' + d.y.toFixed(3) 
+                           + '</span><p><strong>Time: </strong>' + d.t; 
+                  });
         chart.call(tip);
 
         // Load-Color interpolation: Green is good, Red is bad.
@@ -160,37 +161,35 @@
                      .domain([0.0, 0.5, 1.0, 2.5])
                      .range(['#67E400','#67E400','#FF9C00', '#FF0D00']);
 
-        var barData = chart.selectAll('.bar').data(history);
-
-        barData.enter().append('rect')
-               .attr('class', 'bar')
-               .attr('x', function(d) { return x(d.x); })
-               .attr('y', function(d) { return y(d.y); })
-               .attr('height', function(d) { return height - y(d.y); })
-               .attr('width', x.rangeBand())
-               .style('fill', function(d) { return cScale(d.y); })
-               .on('mouseover', tip.show)
-               .on('mouseout', tip.hide);
+        chart.selectAll('.bar').data(history).enter().append('rect')
+             .attr('class', 'bar')
+             .attr('x', function(d) { return x(d.x); })
+             .attr('y', function(d) { return y(d.y); })
+             .attr('height', function(d) { return height - y(d.y); })
+             .attr('width', x.rangeBand())
+             .style('fill', function(d) { return cScale(d.y); })
+             .on('mouseover', tip.show)
+             .on('mouseout', tip.hide);
 
         chart.append('g')
-            .attr('class', 'x axis')
-            .attr('transform', 'translate(0,' + height + ')')
-            .call(xAxis)
-          .append('text') 
-            .attr('y', 30)
-            .attr('x', 49)
-            .style('text-anchor', 'begining')
-            .text('Seconds Ago');
+             .attr('class', 'x axis')
+             .attr('transform', 'translate(0,' + height + ')')
+             .call(xAxis)
+           .append('text') 
+             .attr('y', 30)
+             .attr('x', 49)
+             .style('text-anchor', 'begining')
+             .text('Seconds Ago');
 
         chart.append('g')
-            .attr('class', 'y axis')
-            .call(yAxis)
-          .append('text') 
-            .attr('transform', 'rotate(-90)')
-            .attr('y', 6)
-            .attr('dy', '0.71em')
-            .style('text-anchor', 'end')
-            .text('CPU Load Average');
+             .attr('class', 'y axis')
+             .call(yAxis)
+           .append('text') 
+             .attr('transform', 'rotate(-90)')
+             .attr('y', 6)
+             .attr('dy', '0.71em')
+             .style('text-anchor', 'end')
+             .text('CPU Load Average');
       }
 
       /* 
