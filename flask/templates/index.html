@@ -42,8 +42,10 @@
         if (data.highLoad != high_load) {
           high_load = data.highLoad;
 
-          var now = new Date(data.history[0][0] * 1000);
-          var curr_t = now.toLocaleTimeString();
+          //var now = new Date(data.history[0][0] * 1000);
+          //var curr_t = now.toLocaleTimeString();
+          var state_change_date = new Date(data.stateTime * 1000);
+          var state_change_time = state_change_date.toLocaleTimeString();
 
           var a_list = $('ul#alerts');
           var alert_string = '';
@@ -55,7 +57,7 @@
             alert_string = 'Load Recovered! ';
           }
           alert_string += 'Load: ' + data.twoMinAvg.toFixed(2) + ', Triggered at ' 
-                          + curr_t;
+                          + state_change_time;
           li.text(alert_string);
           li.prependTo(a_list);
         }
