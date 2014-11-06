@@ -1,6 +1,6 @@
 # CPU Load Monitoring App
 
-This simple app can be used to monitor your machine's CPU load and uptime.
+A simple app to monitor and visualize your machine's CPU load and uptime.
 
 ## Python Dependencies
 * [uptime](http://pythonhosted.org//uptime/)
