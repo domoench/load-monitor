@@ -7,10 +7,14 @@
   <body>
     <h1>Stats</h1>
     Uptime: <span id='uptime'></span><br>
+    10-min Average Load: <span id='ten-min-avg'></span><br>
+    10-min Average Median: <span id='ten-min-med'></span><br>
+    Min Load: <span id='min-load'></span><br>
+    Max Load: <span id='max-load'></span><br>
     Alerts:
     <ul id='alerts'>
     </ul>
-    History:
+    10-Minute History:
     <ul id='history'>
     </ul>
 
@@ -34,6 +38,10 @@
 
       function handleData(data) {
         $('#uptime').html(data.uptime + ' mins');
+        $('#ten-min-avg').html(data.tenMinAvg.toFixed(2));
+        $('#ten-min-med').html(data.tenMinMed.toFixed(2));
+        $('#min-load').html(data.minLoad.toFixed(2));
+        $('#max-load').html(data.maxLoad.toFixed(2));
         
         // Display Alert History
         var a_list = $('ul#alerts');
@@ -54,12 +62,11 @@
           }
           alert_time = new Date(alert_time * 1000);
           alert_time = alert_time.toLocaleTimeString();
-          alert_string += 'Load: ' + alert_load_avg + ', Triggered at ' 
+          alert_string += '2-minute Load Average: ' + alert_load_avg + ', Triggered at ' 
                           + alert_time;
           li.text(alert_string);
           li.appendTo(a_list);
         });
-
 
         // Display History
         var h_list = $('ul#history');

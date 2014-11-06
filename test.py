@@ -1,4 +1,4 @@
-from monitor import loadAvg, highLoad
+from monitor import loadAvg, loadMedian, highLoad
 from unittest import main, TestCase
 
 class TestMonitor(TestCase):
@@ -16,6 +16,24 @@ class TestMonitor(TestCase):
   def test_loadAvg_3(self):
     l = [(60.0, 3.86)]
     self.assertEqual(loadAvg(l), 3.86)
+
+  def test_loadMedian_1(self):
+    l = [(60.0, 6.0), (50.0, 2.0), (40.0, 3.0), (30.0, 5.0), (20.0, 4.0), 
+         (10.0, 1.0), (0.0, 7.0)]
+    self.assertEqual(loadMedian(l), 4.0)
+
+  def test_loadMedian_2(self):
+    l = [(60.0, 6.0), (50.0, 2.0), (40.0, 3.0), (30.0, 5.0), (20.0, 4.0), 
+         (10.0, 1.0), (0.0, 7.0), (0.0, 8.0)]
+    self.assertEqual(loadMedian(l), 4.5)
+
+  def test_loadMedian_3(self):
+    l = [(60.0, 1.0), (50.0, 1.0), (40.0, 1.0), (30.0, 1.0), (20.0, 1.0), 
+         (10.0, 1.0), (0.0, 1.0)]
+    self.assertEqual(loadMedian(l), 1.0)
+
+    l = [(60.0, 6.0)]
+    self.assertEqual(loadMedian(l), 6.0)
 
   def test_highLoad_1(self):
     mins = 10

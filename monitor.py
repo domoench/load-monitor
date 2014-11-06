@@ -18,6 +18,8 @@ class Monitor:
   def __init__(self):
     self.s = sched.scheduler(time.time, time.sleep)
     self.high_load = False       # True => Average load over past 2 mins > 1.0
+    self.min_load  = None
+    self.max_load  = None
 
     with open('data.json', 'w') as f:
       data = {'history': [], 'alertHistory': []}
@@ -42,6 +44,16 @@ class Monitor:
         history.pop()
       assert len(history) <= 60
 
+      # Update min, max, and 10-min mean and median
+      if not self.min_load:
+        self.min_load = load[0]
+        self.max_load = load[0]
+      else:
+        if load[0] < self.min_load:
+          self.min_load = load[0]
+        if load[0] > self.max_load:
+          self.max_load = load[0]
+
       # Check if load state crossed alert threshold
       alert_history = old_data['alertHistory']
       new_high_load, two_min_avg = highLoad(history)
@@ -52,10 +64,14 @@ class Monitor:
 
       # Package up and save to disk
       data = {}
-      data['history']      = history
+      data['twoMinAvg'] = two_min_avg
+      data['tenMinAvg'] = loadAvg(history)
+      data['tenMinMed'] = loadMedian(history)
+      data['history']   = history
+      data['uptime']    = up_t
+      data['minLoad']   = self.min_load
+      data['maxLoad']   = self.max_load
       data['alertHistory'] = alert_history
-      data['twoMinAvg']    = two_min_avg
-      data['uptime']       = up_t
 
       f.seek(0)
       json.dump(data, f)
@@ -80,6 +96,20 @@ def loadAvg(l):
   for (t, load) in l:
     v += load
   return v / n
+
+def loadMedian(l):
+  """
+  Calculate the median load over a given load history list.
+
+  Args:
+    l: A list of (time, cpu-load) tuples - the history.
+  """
+  n = len(l)
+  loads = [load for time, load in l]
+  sorted_loads = sorted(loads)
+  if not n % 2:
+    return (sorted_loads[n / 2] + sorted_loads[n / 2 - 1]) / 2.0
+  return sorted_loads[n / 2]
 
 def highLoad(l, mins = 2):
   """
