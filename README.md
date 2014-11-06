@@ -1,6 +1,6 @@
 # CPU Load Monitoring App
 
-This simple web app can be used to monitor your machine's CPU load and uptime.
+This simple app can be used to monitor your machine's CPU load and uptime.
 
 ## Python Dependencies
 * [uptime](http://pythonhosted.org//uptime/)
@@ -18,3 +18,7 @@ This simple web app can be used to monitor your machine's CPU load and uptime.
 
 ## Design
 ![Design](https://raw.githubusercontent.com/domoench/load-monitor/master/flask/static/design.png?token=ACbj6MViB_qLH_KX4qgDV7JfqYQrS1Bhks5UZRISwA%3D%3D)
+
+## Other Citations
+* [Mike Bostock's D3 Tutorial](http://bost.ocks.org/mike/bar/3/)
+* [d3.js](d3js.org)

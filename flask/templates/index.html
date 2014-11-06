@@ -26,17 +26,15 @@
 
     <div id='alerts'>
       <h2>Alerts</h2>
-      <ul id='alert-list'>
-      </ul>
+      <ul id='alert-list'></ul>
     </div>
 
     <script>
       refresh();
 
-      function poll(){
-        setTimeout(refresh, 10000); 
-      };
-
+      /*
+         Query Flask for JSON data describing system state.
+      */
       function refresh() {
         $.ajax({
           url: 'http://localhost:5000/state', 
@@ -48,6 +46,16 @@
           }});
       }
 
+      /*
+        Schedule repeated refreshes. 
+      */
+      function poll(){
+        setTimeout(refresh, 10000); 
+      };
+
+      /*
+         Update the DOM to reflect the system state encapsulated in JSON data.
+      */
       function handleData(data) {
         $('#uptime').html(data.uptime + ' mins');
         $('#ten-min-avg').html(data.tenMinAvg.toFixed(2));
@@ -59,33 +67,36 @@
         var a_list = $('ul#alert-list');
         a_list.html('')
         $.each(data.alertHistory, function(i) {
-          var alert_entry    = data.alertHistory[i],
-              alert_time     = alert_entry[0],
-              alert_high     = alert_entry[1],
-              alert_load_avg = alert_entry[2].toFixed(2),
+          var alert_entry = data.alertHistory[i],
+              alert_time  = alert_entry[0],
+              alert_high  = alert_entry[1],
+              alert_avg   = alert_entry[2].toFixed(2),
               li = $('<li/>'),
           alert_time = new Date(alert_time * 1000);
           alert_time = alert_time.toLocaleTimeString();
-          time_stamp_html = '<span class="time-stamp">' + alert_time + '</span>';
-          li.append(time_stamp_html);
+          var time_stamp_html = '<span class="time-stamp">' 
+                                + alert_time + '</span>';
 
-          alert_msg_html = '<span class="alert-msg';
+          var alert_msg_html = '<span class="alert-msg';
           if (alert_high) {
             alert_msg_html += ' high"> High Load! ';
-          }
-          else {
+          } else {
             alert_msg_html += ' low"> Load Recovered! ';
           }
-          alert_msg_html += '2-minute Load Average: ' + alert_load_avg;
+          alert_msg_html += '2-minute Load Average: ' + alert_avg;
           alert_msg_html += '</span>'
-          li.append(alert_msg_html);
 
+          li.append(time_stamp_html);
+          li.append(alert_msg_html);
           li.appendTo(a_list);
         });
 
         drawBarGraph(data);
       }
 
+      /*
+         Display the load history as a bar graph with D3.
+      */
       function drawBarGraph(data) {
         var history = [];
         for (var i = 0; i < data.history.length; ++i) {
@@ -122,8 +133,10 @@
                     .attr('width', width + margin.left + margin.right)
                     .attr('height', height + margin.bottom + margin.top)
                   .append('g')
-                    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+                    .attr('transform', 
+                          'translate(' + margin.left + ',' + margin.top + ')');
 
+        // TODO: Why won't D3 let me user 'chart' variable here
         d3.select('#bar-graph').selectAll('text').remove();
         d3.select('#bar-graph').selectAll('rect').remove();
 
@@ -134,7 +147,7 @@
         var cScale = d3.scale.linear()
                      .domain([0.0, 0.5, 1.0, 2.5])
                      .range(['#67E400','#67E400','#FF9C00', '#FF0D00']);
-                     
+
         barData.enter().append('rect')
                .attr('class', 'bar')
                .attr('x', function(d) { return x(d.x); })
