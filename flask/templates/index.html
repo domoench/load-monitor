@@ -3,42 +3,32 @@
 <html>
   <head>
     <title>CPU Load Monitor</title>
+    <link rel='stylesheet' href='../static/style.css'>
     <script src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
     <script src='http://d3js.org/d3.v3.min.js'></script>
   </head>
 
-  <style>
-    .axis text {
-      font: 10px sans-serif;
-    }
-
-    .axis path,
-    .axis line {
-      fill: none;
-      stroke: #000;
-      shape-rendering: crispEdges;
-    }
-
-    .x.axis path {
-      display: none;
-    }
-  </style>
-
   <body>
-    <h1>Stats</h1>
-    Uptime: <span id='uptime'></span><br>
-    10-min Average Load: <span id='ten-min-avg'></span><br>
-    10-min Average Median: <span id='ten-min-med'></span><br>
-    Min Load: <span id='min-load'></span><br>
-    Max Load: <span id='max-load'></span><br>
-    Alerts:
-    <ul id='alerts'>
-    </ul>
-    10-Minute History:
-    <ul id='history'>
-    </ul>
+    <h1>CPU Load Monitor</h1>
 
     <svg id='bar-graph'></svg>
+
+    <div id='stats'>
+      <h2>Current Stats</h2>
+      <ul>
+        <li>Uptime: <span id='uptime' class='stat-data'></span><br></li>
+        <li>10-min Average Load: <span id='ten-min-avg' class='stat-data'></span><br></li>
+        <li>10-min Median Load: <span id='ten-min-med' class='stat-data'></span><br></li>
+        <li>Min Load: <span id='min-load' class='stat-data'></span><br></li>
+        <li>Max Load: <span id='max-load' class='stat-data'></span><br></li>
+      </ul>
+    </div>
+
+    <div id='alerts'>
+      <h2>Alerts</h2>
+      <ul id='alert-list'>
+      </ul>
+    </div>
 
     <script>
       refresh();
@@ -66,7 +56,7 @@
         $('#max-load').html(data.maxLoad.toFixed(2));
         
         // Display Alert History
-        var a_list = $('ul#alerts');
+        var a_list = $('ul#alert-list');
         a_list.html('')
         $.each(data.alertHistory, function(i) {
           var alert_entry    = data.alertHistory[i],
@@ -74,37 +64,29 @@
               alert_high     = alert_entry[1],
               alert_load_avg = alert_entry[2].toFixed(2),
               li = $('<li/>'),
-              alert_string = '';
-
-          if (alert_high) {
-            alert_string = 'High Load Alert! ';
-          }
-          else {
-            alert_string = 'Load Recovered! ';
-          }
           alert_time = new Date(alert_time * 1000);
           alert_time = alert_time.toLocaleTimeString();
-          alert_string += '2-minute Load Average: ' + alert_load_avg + ', Triggered at ' 
-                          + alert_time;
-          li.text(alert_string);
+          time_stamp_html = '<span class="time-stamp">' + alert_time + '</span>';
+          li.append(time_stamp_html);
+
+          alert_msg_html = '<span class="alert-msg';
+          if (alert_high) {
+            alert_msg_html += ' high"> High Load! ';
+          }
+          else {
+            alert_msg_html += ' low"> Load Recovered! ';
+          }
+          alert_msg_html += '2-minute Load Average: ' + alert_load_avg;
+          alert_msg_html += '</span>'
+          li.append(alert_msg_html);
+
           li.appendTo(a_list);
         });
-
-        // Display History
-        /*
-        var h_list = $('ul#history');
-        h_list.html('')
-        $.each(data.history, function(i) {
-            var li = $('<li/>').text(data.history[i][1].toFixed(2));
-            li.appendTo(h_list);
-        });
-        */
 
         drawBarGraph(data);
       }
 
       function drawBarGraph(data) {
-        console.log('drawing');
         var history = [];
         for (var i = 0; i < data.history.length; ++i) {
           history.push({x: i * 10, y: data.history[i][1]});
@@ -115,7 +97,7 @@
           time_steps.push(i);
         }
 
-        var margin = {top: 20, right: 30, bottom: 40, left: 30},
+        var margin = {top: 20, right: 30, bottom: 50, left: 30},
             width  = 960 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;
 
@@ -145,6 +127,8 @@
         d3.select('#bar-graph').selectAll('text').remove();
         d3.select('#bar-graph').selectAll('rect').remove();
 
+        // TODO: Add tooltip on hover to show exact time and load
+
         var barData = chart.selectAll('.bar').data(history);
 
         var cScale = d3.scale.linear()
@@ -159,29 +143,28 @@
                .attr('width', x.rangeBand())
                .style('fill', function(d) { return cScale(d.y); });
 
-        chart.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
+        chart.append('g')
+            .attr('class', 'x axis')
+            .attr('transform', 'translate(0,' + height + ')')
             .call(xAxis)
           .append('text') 
-            .attr("y", 30)
-            .attr("x", 49)
-            .style("text-anchor", "begining")
-            .text("Seconds Ago");
+            .attr('y', 30)
+            .attr('x', 49)
+            .style('text-anchor', 'begining')
+            .text('Seconds Ago');
 
-        chart.append("g")
-            .attr("class", "y axis")
+        chart.append('g')
+            .attr('class', 'y axis')
             .call(yAxis)
           .append('text') 
-            .attr("transform", "rotate(-90)")
-            .attr("y", 6)
-            .attr("dy", "0.71em")
-            .style("text-anchor", "end")
-            .text("CPU Load Average");
-            
-
+            .attr('transform', 'rotate(-90)')
+            .attr('y', 6)
+            .attr('dy', '0.71em')
+            .style('text-anchor', 'end')
+            .text('CPU Load Average');
       }
     </script>
+
   </body>
 
 </html>
