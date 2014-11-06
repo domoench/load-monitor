@@ -45,4 +45,10 @@ class TestMonitor(TestCase):
     self.assertFalse(high_load)
     self.assertEqual(avg, 0.5)
 
+  def test_highLoad_3(self):
+    l = [(60.0, 5.0), (50.0, 7.0), (40.0, 5.0), (30.0, 10.0)]
+    high_load, avg = highLoad(l, 3)
+    self.assertFalse(high_load)
+    self.assertEqual(avg, 6.75)
+
 main()

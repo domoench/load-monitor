@@ -7,7 +7,6 @@
   <body>
     <h1>Stats</h1>
     Uptime: <span id='uptime'></span><br>
-    High load: <span id='high-load'></span><br>
     Alerts:
     <ul id='alerts'>
     </ul>
@@ -16,7 +15,6 @@
     </ul>
 
     <script>
-      var high_load = false;
       refresh();
 
       function poll(){
@@ -36,32 +34,34 @@
 
       function handleData(data) {
         $('#uptime').html(data.uptime + ' mins');
-        $('#high-load').html(String(data.highLoad));
         
-        // Detect changes in alert state
-        if (data.highLoad != high_load) {
-          high_load = data.highLoad;
+        // Display Alert History
+        var a_list = $('ul#alerts');
+        a_list.html('')
+        $.each(data.alertHistory, function(i) {
+          var alert_entry    = data.alertHistory[i],
+              alert_time     = alert_entry[0],
+              alert_high     = alert_entry[1],
+              alert_load_avg = alert_entry[2].toFixed(2),
+              li = $('<li/>'),
+              alert_string = '';
 
-          //var now = new Date(data.history[0][0] * 1000);
-          //var curr_t = now.toLocaleTimeString();
-          var state_change_date = new Date(data.stateTime * 1000);
-          var state_change_time = state_change_date.toLocaleTimeString();
-
-          var a_list = $('ul#alerts');
-          var alert_string = '';
-          var li = $('<li/>');
-          if (data.highLoad) {
+          if (alert_high) {
             alert_string = 'High Load Alert! ';
           }
           else {
             alert_string = 'Load Recovered! ';
           }
-          alert_string += 'Load: ' + data.twoMinAvg.toFixed(2) + ', Triggered at ' 
-                          + state_change_time;
+          alert_time = new Date(alert_time * 1000);
+          alert_time = alert_time.toLocaleTimeString();
+          alert_string += 'Load: ' + alert_load_avg + ', Triggered at ' 
+                          + alert_time;
           li.text(alert_string);
-          li.prependTo(a_list);
-        }
+          li.appendTo(a_list);
+        });
 
+
+        // Display History
         var h_list = $('ul#history');
         h_list.html('')
         $.each(data.history, function(i) {
