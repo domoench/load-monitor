@@ -1,8 +1,32 @@
+<!DOCTYPE html>
+<meta charset='utf-8'>
 <html>
   <head>
     <title>CPU Load Monitor</title>
     <script src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
+    <script src='http://d3js.org/d3.v3.min.js'></script>
   </head>
+
+  <style>
+  .bar {
+  fill: steelblue;
+  }
+
+  .axis text {
+    font: 10px sans-serif;
+  }
+
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+
+  .x.axis path {
+    display: none;
+  }
+  </style>
 
   <body>
     <h1>Stats</h1>
@@ -17,6 +41,8 @@
     10-Minute History:
     <ul id='history'>
     </ul>
+
+    <svg id='bar-graph'></svg>
 
     <script>
       refresh();
@@ -69,12 +95,57 @@
         });
 
         // Display History
+        /*
         var h_list = $('ul#history');
         h_list.html('')
         $.each(data.history, function(i) {
             var li = $('<li/>').text(data.history[i][1].toFixed(2));
             li.appendTo(h_list);
         });
+        */
+
+        drawBarGraph(data);
+      }
+
+      function drawBarGraph(data) {
+        console.log('drawing');
+        var history = [];
+        for (var i = 0; i < data.history.length; ++i) {
+          history.push(data.history[i][1]);
+        }
+
+        var width  = 960,
+            height = 500;
+
+        var y = d3.scale.linear()
+                .range([height, 0]);
+
+        var chart = d3.select('#bar-graph')
+                    .attr('width', width)
+                    .attr('height', height);
+
+        y.domain([0, d3.max(history, function(d) { return d; })]);
+
+        var barWidth = width / 60.0;
+
+        chart.selectAll("g").remove();
+
+        var bar = chart.selectAll("g")
+                  .data(history)
+                  .enter().append("g")
+                  .attr("transform", function(d, i) { 
+                    return "translate(" + i * barWidth + ",0)"; 
+                  });
+
+        bar.append("rect")
+          .attr("y", function(d) { return y(d); })
+          .attr("height", function(d) { return height - y(d); })
+          .attr("width", barWidth - 1);
+
+        function type(d) {
+          d.value = +d.value; // coerce to number
+          return d;
+        }
       }
     </script>
   </body>
