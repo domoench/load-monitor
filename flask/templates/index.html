@@ -8,24 +8,20 @@
   </head>
 
   <style>
-  .bar {
-  fill: steelblue;
-  }
+    .axis text {
+      font: 10px sans-serif;
+    }
 
-  .axis text {
-    font: 10px sans-serif;
-  }
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
 
-  .axis path,
-  .axis line {
-    fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
-  }
-
-  .x.axis path {
-    display: none;
-  }
+    .x.axis path {
+      display: none;
+    }
   </style>
 
   <body>
@@ -111,41 +107,79 @@
         console.log('drawing');
         var history = [];
         for (var i = 0; i < data.history.length; ++i) {
-          history.push(data.history[i][1]);
+          history.push({x: i * 10, y: data.history[i][1]});
         }
 
-        var width  = 960,
-            height = 500;
+        var time_steps = [];
+        for (var i = 0; i < 600; i += 10) {
+          time_steps.push(i);
+        }
+
+        var margin = {top: 20, right: 30, bottom: 40, left: 30},
+            width  = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+        var x = d3.scale.ordinal()
+                .domain(time_steps)
+                .rangeRoundBands([0, width], .1);
 
         var y = d3.scale.linear()
+                .domain([0, 3])
                 .range([height, 0]);
 
+        var xAxis = d3.svg.axis()
+                    .scale(x)
+                    .orient('bottom')
+                    .tickValues([0, 60, 120, 180, 240, 300, 360, 420, 480, 540]);
+
+        var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient('left');
+
         var chart = d3.select('#bar-graph')
-                    .attr('width', width)
-                    .attr('height', height);
+                    .attr('width', width + margin.left + margin.right)
+                    .attr('height', height + margin.bottom + margin.top)
+                  .append('g')
+                    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-        y.domain([0, d3.max(history, function(d) { return d; })]);
+        d3.select('#bar-graph').selectAll('text').remove();
+        d3.select('#bar-graph').selectAll('rect').remove();
 
-        var barWidth = width / 60.0;
+        var barData = chart.selectAll('.bar').data(history);
 
-        chart.selectAll("g").remove();
+        var cScale = d3.scale.linear()
+                     .domain([0.0, 0.5, 1.0, 2.5])
+                     .range(['#67E400','#67E400','#FF9C00', '#FF0D00']);
+                     
+        barData.enter().append('rect')
+               .attr('class', 'bar')
+               .attr('x', function(d) { return x(d.x); })
+               .attr('y', function(d) { return y(d.y); })
+               .attr('height', function(d) { return height - y(d.y); })
+               .attr('width', x.rangeBand())
+               .style('fill', function(d) { return cScale(d.y); });
 
-        var bar = chart.selectAll("g")
-                  .data(history)
-                  .enter().append("g")
-                  .attr("transform", function(d, i) { 
-                    return "translate(" + i * barWidth + ",0)"; 
-                  });
+        chart.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis)
+          .append('text') 
+            .attr("y", 30)
+            .attr("x", 49)
+            .style("text-anchor", "begining")
+            .text("Seconds Ago");
 
-        bar.append("rect")
-          .attr("y", function(d) { return y(d); })
-          .attr("height", function(d) { return height - y(d); })
-          .attr("width", barWidth - 1);
+        chart.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+          .append('text') 
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", "0.71em")
+            .style("text-anchor", "end")
+            .text("CPU Load Average");
+            
 
-        function type(d) {
-          d.value = +d.value; // coerce to number
-          return d;
-        }
       }
     </script>
   </body>
