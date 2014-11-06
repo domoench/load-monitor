@@ -9,8 +9,9 @@ A simple app to monitor and visualize your machine's CPU load and uptime.
 ## To Run
 1. Start Monitor process.
   * `python monitor.py`
-2. Start Flask server.
-  * `python flask/server.py`
+2. Start Flask server (in a separate terminal window).
+  * `cd flask/`
+  * `python server.py`
 3. Open http://localhost:5000/ in your browser.
 
 ## To Run Unit Tests
