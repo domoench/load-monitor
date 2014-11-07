@@ -2,7 +2,7 @@
   This process monitors the system's state (CPU load average history, uptime, 
   statistics) and writes that state to a JSON data store every 10 seconds.
 """
-import sched, time, os, json, uptime
+import sched, time, os, json, uptime, multiprocessing
 
 class Monitor:
 
@@ -11,6 +11,7 @@ class Monitor:
     self.high_load = False  # True => Average load over past 2 mins > 1.0
     self.min_load  = None
     self.max_load  = None
+    self.num_cores = multiprocessing.cpu_count()
 
     # Write datastore template
     with open('data.json', 'w') as f:
@@ -37,29 +38,32 @@ class Monitor:
     load average at that time.
     """
     # Get system stats
-    now  = time.time()               # Current time
-    load = os.getloadavg()           # Load for past (1, 5, 15) minutes
-    up_t = int(uptime.uptime() / 60) # Total system uptime in minutes
+    now   = time.time()               # Current time
+    loads = os.getloadavg()           # Load for past (1, 5, 15) minutes
+    up_t  = int(uptime.uptime() / 60) # Total system uptime in minutes
+
+    # Normalize load according to number of CPU cores
+    load = loads[0] / self.num_cores 
 
     with open('data.json', 'r+') as f:
       old_data = json.load(f)
 
       # Add newest data sample to history.
       history = old_data['history'] 
-      history.insert(0, (now, load[0]))
+      history.insert(0, (now, load))
       if len(history) > 60:
         history.pop()
       assert len(history) <= 60
 
       # Update min, max 
       if not self.min_load:
-        self.min_load = load[0]
-        self.max_load = load[0]
+        self.min_load = load
+        self.max_load = load
       else:
-        if load[0] < self.min_load:
-          self.min_load = load[0]
-        if load[0] > self.max_load:
-          self.max_load = load[0]
+        if load < self.min_load:
+          self.min_load = load
+        if load > self.max_load:
+          self.max_load = load
 
       # Check if load state crossed alert threshold
       alert_history = old_data['alertHistory']
