@@ -71,3 +71,7 @@ li {
 .x.axis path {
   display: none;
 }
+
+.bar:hover {
+  fill: brown;
+}
