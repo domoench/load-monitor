@@ -78,8 +78,6 @@ class Monitor:
     new_data['alertHistory'] = alert_history
     
     self.saveData(new_data)
-
-    # Reschedule
     self.reschedule()
 
   def readSysStats(self):
