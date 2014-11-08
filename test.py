@@ -76,10 +76,12 @@ class TestMonitor(TestCase):
 
     self.assertEqual(test_data['tenMinAvg'], 1.5)
     self.assertEqual(test_data['tenMinMed'], 1.5)
+    self.assertEqual(test_data['twoMinAvg'], 1.5)
     self.assertEqual(test_data['uptime'], 590)
     self.assertEqual(test_data['maxLoad'], 3.0)
     self.assertEqual(test_data['minLoad'], 0.0)
     self.assertEqual(len(test_data['history']), 60)
+    self.assertEqual(test_data['history'][0], (590, 3.0))
     
     self.assertEqual(len(test_data['alertHistory']), 1)
     self.assertEqual(test_data['alertHistory'][0][0], 110)
@@ -94,10 +96,12 @@ class TestMonitor(TestCase):
 
     self.assertAlmostEqual(test_data['tenMinAvg'], 1.03333333)
     self.assertEqual(test_data['tenMinMed'], 1.0)
+    self.assertEqual(test_data['twoMinAvg'], 0.5)
     self.assertEqual(test_data['uptime'], 890)
     self.assertEqual(test_data['maxLoad'], 3.0)
     self.assertEqual(test_data['minLoad'], 0.0)
     self.assertEqual(len(test_data['history']), 60)
+    self.assertEqual(test_data['history'][0], (890, 1.0))
 
     self.assertEqual(len(test_data['alertHistory']), 2)
     self.assertEqual(test_data['alertHistory'][0][0], 660)
