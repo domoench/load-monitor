@@ -12,9 +12,10 @@ class Monitor:
     self.min_load  = None
     self.max_load  = None
     self.num_cores = multiprocessing.cpu_count()
+    self.data_path = 'data.json'
 
     # Write datastore template
-    with open('data.json', 'w') as f:
+    with open(self.data_path, 'w') as f:
       data = {'history': [], 'alertHistory': []}
       json.dump(data, f)
 
@@ -38,57 +39,71 @@ class Monitor:
     load average at that time.
     """
     # Get system stats
-    now   = time.time()               # Current time
-    loads = os.getloadavg()           # Load for past (1, 5, 15) minutes
-    up_t  = int(uptime.uptime() / 60) # Total system uptime in minutes
+    now, load, up_time = self.readSysStats()
+    old_data = self.readData()
 
-    # Normalize load according to number of CPU cores
-    load = loads[0] / self.num_cores 
+    # Add newest data sample to history.
+    history = old_data['history'] 
+    history.insert(0, (now, load))
+    if len(history) > 60:
+      history.pop()
+    assert len(history) <= 60
 
-    with open('data.json', 'r+') as f:
-      old_data = json.load(f)
-
-      # Add newest data sample to history.
-      history = old_data['history'] 
-      history.insert(0, (now, load))
-      if len(history) > 60:
-        history.pop()
-      assert len(history) <= 60
-
-      # Update min, max 
-      if not self.min_load:
+    # Update min, max 
+    if self.min_load is None:
+      self.min_load = load
+      self.max_load = load
+    else:
+      if load < self.min_load:
         self.min_load = load
+      if load > self.max_load:
         self.max_load = load
-      else:
-        if load < self.min_load:
-          self.min_load = load
-        if load > self.max_load:
-          self.max_load = load
 
-      # Check if load state crossed alert threshold
-      alert_history = old_data['alertHistory']
-      new_high_load, two_min_avg = highLoad(history)
-      if new_high_load is not self.high_load:
-        alert_history.insert(0, (now, new_high_load, two_min_avg))
-        self.high_load = new_high_load
-        # TODO: Prune alert_history if it goes to far back into past?
+    # Check if load state crossed alert threshold
+    alert_history = old_data['alertHistory']
+    new_high_load, two_min_avg = highLoad(history)
+    if new_high_load is not self.high_load:
+      alert_history.insert(0, (now, new_high_load, two_min_avg))
+      self.high_load = new_high_load
 
-      # Package up and save to disk
-      data = {}
-      data['twoMinAvg'] = two_min_avg
-      data['tenMinAvg'] = loadAvg(history)
-      data['tenMinMed'] = loadMedian(history)
-      data['history']   = history
-      data['uptime']    = up_t
-      data['minLoad']   = self.min_load
-      data['maxLoad']   = self.max_load
-      data['alertHistory'] = alert_history
-
-      f.seek(0)
-      json.dump(data, f)
-      f.truncate()
+    # Package up and save to disk
+    new_data = {}
+    new_data['twoMinAvg'] = two_min_avg
+    new_data['tenMinAvg'] = loadAvg(history)
+    new_data['tenMinMed'] = loadMedian(history)
+    new_data['history']   = history
+    new_data['uptime']    = up_time
+    new_data['minLoad']   = self.min_load
+    new_data['maxLoad']   = self.max_load
+    new_data['alertHistory'] = alert_history
+    
+    self.saveData(new_data)
 
     # Reschedule
+    self.reschedule()
+
+  def readSysStats(self):
+    now  = time.time()               
+    load = self.getLoad()            
+    up_time = int(uptime.uptime() / 60.0) 
+    return (now, load, up_time)
+
+  def readData(self):
+    with open(self.data_path, 'r') as f:
+      return json.load(f)
+
+  def saveData(self, data):
+    with open(self.data_path, 'w') as f:
+      json.dump(data, f)
+
+  def getLoad(self):
+    """
+    Get the CPU load normalized by the number of cores.
+    """
+    loads = os.getloadavg()   # Load for past (1, 5, 15) minutes
+    return loads[0] / self.num_cores 
+
+  def reschedule(self):
     self.s.enter(10, 1, self.update_stats, ())
 
   def run(self):
